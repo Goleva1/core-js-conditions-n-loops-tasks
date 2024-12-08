@@ -418,18 +418,15 @@ function getSpiralMatrix(size) {
  */
 function rotateMatrix(matrix) {
   const n = matrix.length;
+  const rotated = Array.from({ length: n }, () => Array(n).fill(0));
 
-  for (let i = 0; i < Math.floor(n / 2); i++) {
-    for (let j = i; j < n - i - 1; j++) {
-      const temp = matrix[i][j];
-      matrix[i][j] = matrix[n - 1 - j][i];
-      matrix[n - 1 - j][i] = matrix[n - 1 - i][n - 1 - j];
-      matrix[n - 1 - i][n - 1 - j] = matrix[j][n - 1 - i];
-      matrix[j][n - 1 - i] = temp;
+  for (let i = 0; i < n; i += 1) {
+    for (let j = 0; j < n; j += 1) {
+      rotated[j][n - 1 - i] = matrix[i][j];
     }
   }
 
-  return matrix;
+  return rotated;
 }
 
 /**
@@ -447,34 +444,21 @@ function rotateMatrix(matrix) {
  *  [-2, 9, 5, -3]  => [-3, -2, 5, 9]
  */
 function sortByAsc(arr) {
-  const stack = [[0, arr.length - 1]];
-
-  while (stack.length) {
-    const [low, high] = stack.pop();
-    if (low < high) {
-      const pivotIndex = partition(arr, low, high);
-
-      stack.push([low, pivotIndex - 1]);
-      stack.push([pivotIndex + 1, high]);
-    }
-  }
-
+  quickSort(arr, 0, arr.length - 1);
   return arr;
 }
 
-function partition(arr, low, high) {
-  const pivot = arr[high];
-  let i = low - 1;
-
-  for (let j = low; j < high; j += 1) {
-    if (arr[j] < pivot) {
-      i++;
-      [arr[i], arr[j]] = [arr[j], arr[i]];
+function quickSort(arr, low, high) {
+  while (low < high) {
+    const pivotIndex = partition(arr, low, high);
+    if (pivotIndex - low < high - pivotIndex) {
+      quickSort(arr, low, pivotIndex - 1);
+      low = pivotIndex + 1;
+    } else {
+      quickSort(arr, pivotIndex + 1, high);
+      high = pivotIndex - 1;
     }
   }
-
-  [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
-  return i + 1;
 }
 
 function partition(arr, low, high) {
@@ -483,7 +467,7 @@ function partition(arr, low, high) {
 
   for (let j = low; j < high; j += 1) {
     if (arr[j] < pivot) {
-      i++;
+      i += 1;
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
   }
@@ -510,22 +494,24 @@ function partition(arr, low, high) {
  *  'qwerty', 3 => 'qetwry' => 'qtrewy' => 'qrwtey'
  */
 function shuffleChar(str, iterations) {
-  const n = str.length;
-  let charArray = Array.from(str);
+  let currentStr = str;
 
   for (let iter = 0; iter < iterations; iter += 1) {
-    const shuffled = new Array(n);
+    let evenChars = '';
+    let oddChars = '';
 
-    for (let i = 0; i < n; i += 1) {
-      const targetIndex =
-        i % 2 === 0 ? i / 2 : Math.floor(n / 2) + Math.floor(i / 2);
-      shuffled[targetIndex] = charArray[i];
+    for (let i = 0; i < currentStr.length; i += 1) {
+      if (i % 2 === 0) {
+        evenChars += currentStr[i];
+      } else {
+        oddChars += currentStr[i];
+      }
     }
 
-    charArray = shuffled;
+    currentStr = evenChars + oddChars;
   }
 
-  return charArray.join('');
+  return currentStr;
 }
 
 /**
