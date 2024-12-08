@@ -444,37 +444,44 @@ function rotateMatrix(matrix) {
  *  [-2, 9, 5, -3]  => [-3, -2, 5, 9]
  */
 function sortByAsc(arr) {
-  quickSort(arr, 0, arr.length - 1);
-  return arr;
-}
+  function partition(array, low, high) {
+    const tempArray = [...array];
+    const pivot = tempArray[high];
+    let i = low - 1;
 
-function quickSort(arr, low, high) {
-  while (low < high) {
-    const pivotIndex = partition(arr, low, high);
-    if (pivotIndex - low < high - pivotIndex) {
-      quickSort(arr, low, pivotIndex - 1);
-      low = pivotIndex + 1;
-    } else {
-      quickSort(arr, pivotIndex + 1, high);
-      high = pivotIndex - 1;
+    for (let j = low; j < high; j += 1) {
+      if (tempArray[j] <= pivot) {
+        i += 1;
+        const temp = tempArray[i];
+        tempArray[i] = tempArray[j];
+        tempArray[j] = temp;
+      }
     }
-  }
-}
 
-function partition(arr, low, high) {
-  const pivot = arr[high];
-  let i = low - 1;
+    const temp = tempArray[i + 1];
+    tempArray[i + 1] = tempArray[high];
+    tempArray[high] = temp;
 
-  for (let j = low; j < high; j += 1) {
-    if (arr[j] < pivot) {
-      i += 1;
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
+    return { tempArray, pivotIndex: i + 1 };
   }
 
-  [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
-  return i + 1;
+  function quickSort(array, low, high) {
+    if (low < high) {
+      const { tempArray, pivotIndex } = partition(array, low, high);
+      const leftSorted = quickSort(tempArray, low, pivotIndex - 1);
+      const rightSorted = quickSort(leftSorted, pivotIndex + 1, high);
+      return rightSorted;
+    }
+    return array;
+  }
+
+  const copiedArray = [...arr];
+  return quickSort(copiedArray, 0, copiedArray.length - 1);
 }
+
+const exampleArray = [3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5];
+const sortedArray = sortByAsc(exampleArray);
+console.log(sortedArray);
 
 /**
  * Shuffles characters in a string so that the characters with an odd index are moved to the end of the string at each iteration.
