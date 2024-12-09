@@ -317,21 +317,22 @@ function isContainNumber(num, digit) {
  *  [1, 2, 3, 4, 5] => -1   => no balance element
  */
 function getBalanceIndex(arr) {
-  for (let i = 0; i < arr.length; i += 1) {
+  if (arr.length <= 2) return -1;
+  for (let i = 1; i < arr.length - 1; i += 1) {
     let leftSum = 0;
     let rightSum = 0;
-    for (let j = 0; j < i; j += 1) {
-      leftSum += arr[j];
+    for (let j = 0; j < arr.length; j += 1) {
+      if (j < i) {
+        leftSum += arr[j];
+      }
+      if (j > i) {
+        rightSum += arr[j];
+      }
     }
-    for (let k = i + 1; k < arr.length; k += 1) {
-      rightSum += arr[k];
-    }
-
-    if (leftSum === rightSum) {
+    if (rightSum === leftSum) {
       return i;
     }
   }
-
   return -1;
 }
 
@@ -417,16 +418,19 @@ function getSpiralMatrix(size) {
  *  ]                 ]
  */
 function rotateMatrix(matrix) {
-  const n = matrix.length;
-  const rotated = Array.from({ length: n }, () => Array(n).fill(0));
+  const { length } = matrix;
+  const newArray = matrix;
 
-  for (let i = 0; i < n; i += 1) {
-    for (let j = 0; j < n; j += 1) {
-      rotated[j][n - 1 - i] = matrix[i][j];
+  for (let i = 0; i < Math.floor(length / 2); i += 1) {
+    for (let j = i; j < length - i - 1; j += 1) {
+      const buffer = newArray[i][j];
+      newArray[i][j] = matrix[length - 1 - j][i];
+      newArray[length - 1 - j][i] = matrix[length - 1 - i][length - 1 - j];
+      newArray[length - 1 - i][length - 1 - j] = matrix[j][length - 1 - i];
+      newArray[j][length - 1 - i] = buffer;
     }
   }
-
-  return rotated;
+  return newArray;
 }
 
 /**
@@ -444,44 +448,18 @@ function rotateMatrix(matrix) {
  *  [-2, 9, 5, -3]  => [-3, -2, 5, 9]
  */
 function sortByAsc(arr) {
-  function partition(array, low, high) {
-    const tempArray = [...array];
-    const pivot = tempArray[high];
-    let i = low - 1;
-
-    for (let j = low; j < high; j += 1) {
-      if (tempArray[j] <= pivot) {
-        i += 1;
-        const temp = tempArray[i];
-        tempArray[i] = tempArray[j];
-        tempArray[j] = temp;
-      }
+  const newArr = arr;
+  for (let i = 0; i < newArr.length; i += 1) {
+    const current = newArr[i];
+    let j = i;
+    while (j > 0 && newArr[j - 1] > current) {
+      newArr[j] = newArr[j - 1];
+      j -= 1;
     }
-
-    const temp = tempArray[i + 1];
-    tempArray[i + 1] = tempArray[high];
-    tempArray[high] = temp;
-
-    return { tempArray, pivotIndex: i + 1 };
+    newArr[j] = current;
   }
-
-  function quickSort(array, low, high) {
-    if (low < high) {
-      const { tempArray, pivotIndex } = partition(array, low, high);
-      const leftSorted = quickSort(tempArray, low, pivotIndex - 1);
-      const rightSorted = quickSort(leftSorted, pivotIndex + 1, high);
-      return rightSorted;
-    }
-    return array;
-  }
-
-  const copiedArray = [...arr];
-  return quickSort(copiedArray, 0, copiedArray.length - 1);
+  return newArr;
 }
-
-const exampleArray = [3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5];
-const sortedArray = sortByAsc(exampleArray);
-console.log(sortedArray);
 
 /**
  * Shuffles characters in a string so that the characters with an odd index are moved to the end of the string at each iteration.
@@ -501,24 +479,23 @@ console.log(sortedArray);
  *  'qwerty', 3 => 'qetwry' => 'qtrewy' => 'qrwtey'
  */
 function shuffleChar(str, iterations) {
-  let currentStr = str;
-
-  for (let iter = 0; iter < iterations; iter += 1) {
-    let evenChars = '';
-    let oddChars = '';
-
-    for (let i = 0; i < currentStr.length; i += 1) {
-      if (i % 2 === 0) {
-        evenChars += currentStr[i];
-      } else {
-        oddChars += currentStr[i];
-      }
+  let newStr = str;
+  let n = 1;
+  function shuffle(string) {
+    let strLeft = '';
+    let strRight = '';
+    for (let i = 0; i < string.length; i += 1) {
+      if (i % 2) strRight += string[i];
+      else strLeft += string[i];
     }
-
-    currentStr = evenChars + oddChars;
+    return strLeft + strRight;
   }
-
-  return currentStr;
+  while (n <= iterations) {
+    newStr = shuffle(newStr);
+    if (newStr === str) return shuffleChar(str, iterations % n);
+    n += 1;
+  }
+  return newStr;
 }
 
 /**
@@ -539,42 +516,20 @@ function shuffleChar(str, iterations) {
  * @returns {number} The nearest larger number, or original number if none exists.
  */
 function getNearestBigger(number) {
-  const digits = [];
-  let temp = number;
-
-  while (temp > 0) {
-    digits.unshift(temp % 10);
-    temp = Math.floor(temp / 10);
-  }
-
-  let i = digits.length - 2;
-  while (i >= 0 && digits[i] >= digits[i + 1]) {
+  const arrNum = Array.from(`${number}`, (x) => Number(x));
+  let i = arrNum.length - 1;
+  let j = i;
+  while (i > 0 && arrNum[i - 1] >= arrNum[i]) {
     i -= 1;
   }
-
-  if (i < 0) {
-    return number;
-  }
-
-  let j = digits.length - 1;
-  while (digits[j] <= digits[i]) {
+  if (!i) return number;
+  while (arrNum[j] <= arrNum[i - 1]) {
     j -= 1;
   }
+  [arrNum[i - 1], arrNum[j]] = [arrNum[j], arrNum[i - 1]];
 
-  const tempDigit = digits[i];
-  digits[i] = digits[j];
-  digits[j] = tempDigit;
-
-  let result = 0;
-  for (let k = 0; k <= i; k += 1) {
-    result = result * 10 + digits[k];
-  }
-
-  for (let k = digits.length - 1; k > i; k -= 1) {
-    result = result * 10 + digits[k];
-  }
-
-  return result;
+  const rightNum = arrNum.splice(i).sort();
+  return Number([...arrNum, ...rightNum].join(''));
 }
 
 module.exports = {
